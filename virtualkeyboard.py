@@ -10,24 +10,31 @@ mp_draw = mp.solutions.drawing_utils
 
 # Keyboard layout
 keys = [
-    ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"],
-    ["A", "S", "D", "F", "G", "H", "J", "K", "L", ";"],
-    ["Z", "X", "C", "V", "B", "N", "M", ",", ".", "/"]
+    ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "<-"],
+    ["A", "S", "D", "F", "G", "H", "J", "K", "L", ";", "Enter"],
+    ["Z", "X", "C", "V", "B", "N", "M", ",", ".", "/"],
+    ["Space"]
 ]
 
 def draw_keyboard(img, key_positions):
     for row_keys in keys:
         for key in row_keys:
             x, y = key_positions[key]
-            cv2.rectangle(img, (x, y), (x + 40, y + 40), (255, 0, 0), 2)
-            cv2.putText(img, key, (x + 10, y + 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+            if key == "Space":
+                cv2.rectangle(img, (x, y), (x + 200, y + 40), (255, 0, 0), 2)
+            else:
+                cv2.rectangle(img, (x, y), (x + 40, y + 40), (255, 0, 0), 2)
+            cv2.putText(img, key, (x + 5, y + 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
     return img
 
 def get_key_positions(img_width):
     positions = {}
     for i, row_keys in enumerate(keys):
         for j, key in enumerate(row_keys):
-            positions[key] = (j * 50 + 25, i * 50 + 50)
+            if key == "Space":
+                positions[key] = (j * 50 + 200, i * 50 + 50)
+            else:
+                positions[key] = (j * 50 + 25, i * 50 + 50)
     return positions
 
 def main():
@@ -71,10 +78,18 @@ def main():
                 # Check for pinch gesture
                 if distance < 30:
                     for key, (kx, ky) in key_positions.items():
-                        if kx < index_x < kx + 40 and ky < index_y < ky + 40:
-                            text += key
-                            cv2.rectangle(img, (kx, ky), (kx + 40, ky + 40), (0, 255, 0), -1)
-                            cv2.putText(img, key, (kx + 10, ky + 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2)
+                        key_width = 200 if key == "Space" else 40
+                        if kx < index_x < kx + key_width and ky < index_y < ky + 40:
+                            if key == "<-":
+                                text = text[:-1]
+                            elif key == "Enter":
+                                text += "\n"
+                            elif key == "Space":
+                                text += " "
+                            else:
+                                text += key
+                            cv2.rectangle(img, (kx, ky), (kx + key_width, ky + 40), (0, 255, 0), -1)
+                            cv2.putText(img, key, (kx + 5, ky + 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 2)
 
         # Display the typed text
         cv2.rectangle(img, (50, 350), (750, 450), (175, 0, 175), -1)
