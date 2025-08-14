@@ -2,11 +2,13 @@ import cv2
 import mediapipe as mp
 import numpy as np
 import math
+from pynput.keyboard import Controller, Key
 
 # Initialize MediaPipe Hands
 mp_hands = mp.solutions.hands
 hands = mp_hands.Hands(min_detection_confidence=0.7, min_tracking_confidence=0.7)
 mp_draw = mp.solutions.drawing_utils
+keyboard = Controller()
 
 # Keyboard layout
 keys = [
@@ -21,10 +23,10 @@ def draw_keyboard(img, key_positions):
         for key in row_keys:
             x, y = key_positions[key]
             if key == "Space":
-                cv2.rectangle(img, (x, y), (x + 200, y + 40), (255, 0, 0), 2)
+                cv2.rectangle(img, (x, y), (x + 400, y + 80), (255, 0, 0), 2)
             else:
-                cv2.rectangle(img, (x, y), (x + 40, y + 40), (255, 0, 0), 2)
-            cv2.putText(img, key, (x + 5, y + 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
+                cv2.rectangle(img, (x, y), (x + 80, y + 80), (255, 0, 0), 2)
+            cv2.putText(img, key, (x + 10, y + 60), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255, 255, 255), 3)
     return img
 
 def get_key_positions(img_width):
@@ -32,9 +34,9 @@ def get_key_positions(img_width):
     for i, row_keys in enumerate(keys):
         for j, key in enumerate(row_keys):
             if key == "Space":
-                positions[key] = (j * 50 + 200, i * 50 + 50)
+                positions[key] = (j * 100 + 400, i * 100 + 100)
             else:
-                positions[key] = (j * 50 + 25, i * 50 + 50)
+                positions[key] = (j * 100 + 50, i * 100 + 100)
     return positions
 
 def main():
@@ -42,6 +44,9 @@ def main():
     if not cap.isOpened():
         print("Error: Could not open webcam.")
         return
+
+    cap.set(3, 1280)
+    cap.set(4, 720)
 
     key_positions = get_key_positions(int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)))
     text = ""
@@ -76,24 +81,28 @@ def main():
                 cv2.putText(img, f"Pinch Distance: {int(distance)}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
 
                 # Check for pinch gesture
-                if distance < 30:
+                if distance < 50:
                     for key, (kx, ky) in key_positions.items():
-                        key_width = 200 if key == "Space" else 40
-                        if kx < index_x < kx + key_width and ky < index_y < ky + 40:
+                        key_width = 400 if key == "Space" else 80
+                        if kx < index_x < kx + key_width and ky < index_y < ky + 80:
                             if key == "<-":
-                                text = text[:-1]
+                                keyboard.press(Key.backspace)
+                                keyboard.release(Key.backspace)
                             elif key == "Enter":
-                                text += "\n"
+                                keyboard.press(Key.enter)
+                                keyboard.release(Key.enter)
                             elif key == "Space":
-                                text += " "
+                                keyboard.press(Key.space)
+                                keyboard.release(Key.space)
                             else:
-                                text += key
-                            cv2.rectangle(img, (kx, ky), (kx + key_width, ky + 40), (0, 255, 0), -1)
-                            cv2.putText(img, key, (kx + 5, ky + 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 2)
+                                keyboard.press(key)
+                                keyboard.release(key)
+                            cv2.rectangle(img, (kx, ky), (kx + key_width, ky + 80), (0, 255, 0), -1)
+                            cv2.putText(img, key, (kx + 10, ky + 60), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 0, 0), 3)
 
         # Display the typed text
-        cv2.rectangle(img, (50, 350), (750, 450), (175, 0, 175), -1)
-        cv2.putText(img, text, (60, 400), cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 255, 255), 3)
+        cv2.rectangle(img, (100, 700), (1500, 900), (175, 0, 175), -1)
+        cv2.putText(img, text, (120, 800), cv2.FONT_HERSHEY_SIMPLEX, 4, (255, 255, 255), 6)
 
         cv2.imshow("Virtual Keyboard", img)
 
