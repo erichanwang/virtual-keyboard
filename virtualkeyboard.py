@@ -6,7 +6,7 @@ from pynput.keyboard import Controller, Key
 
 # Initialize MediaPipe Hands
 mp_hands = mp.solutions.hands
-hands = mp_hands.Hands(min_detection_confidence=0.7, min_tracking_confidence=0.7)
+hands = mp_hands.Hands(min_detection_confidence=0.6, min_tracking_confidence=0.6)
 mp_draw = mp.solutions.drawing_utils
 keyboard = Controller()
 
@@ -99,10 +99,6 @@ def main():
                                 keyboard.release(key)
                             cv2.rectangle(img, (kx, ky), (kx + key_width, ky + 80), (0, 255, 0), -1)
                             cv2.putText(img, key, (kx + 10, ky + 60), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 0, 0), 3)
-
-        # Display the typed text
-        cv2.rectangle(img, (100, 700), (1500, 900), (175, 0, 175), -1)
-        cv2.putText(img, text, (120, 800), cv2.FONT_HERSHEY_SIMPLEX, 4, (255, 255, 255), 6)
 
         cv2.imshow("Virtual Keyboard", img)
 
